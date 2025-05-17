@@ -1,6 +1,6 @@
 # 🧑‍🍳🤖 Projeto: Chef IA Duo: Desvendando Sabores para Dietas Restritivas 🥗🍎
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]([LINK PARA O SEU NOTEBOOK DO COLAB NO GITHUB])
+[![Open In Colab]( https://github.com/SHESCOLARIQUE/alura-imersao-gemini-desafio/blob/main/Desafio_2_Imers%C3%A3o_IA_Alura_%2B_Google_Gemini_Aula_05_Agentes.ipynb)]) 
 
 **Breve Descrição:**
 
@@ -33,7 +33,7 @@ O fluxo de trabalho do "Chef IA Duo" é o seguinte:
 
 Para experimentar o "Chef IA Duo", siga estas etapas:
 
-1.  **Abra o Notebook no Colab:** Clique no badge "[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)]([LINK PARA O SEU NOTEBOOK DO COLAB NO GITHUB])" para abrir o arquivo do projeto diretamente no Google Colaboratory. **Substitua `[LINK PARA O SEU NOTEBOOK DO COLAB NO GITHUB]` pelo link real do seu arquivo `.ipynb` no GitHub.**
+1.  **Abra o Notebook no Colab:** Clique no badge "[![Open In Colab]( https://github.com/SHESCOLARIQUE/alura-imersao-gemini-desafio/blob/main/Desafio_2_Imers%C3%A3o_IA_Alura_%2B_Google_Gemini_Aula_05_Agentes.ipynb)])" para abrir o projeto diretamente no Google Colab 
 2.  **Execute as Células:** Dentro do notebook do Colab, execute as células de código em sequência ▶️. A interação entre os Agentes 1 e 2 e a geração das receitas, listas de compras e instruções serão exibidas na saída das células.
 3.  **Analise os Resultados:** Observe as listas de compras detalhadas para cada dia 🧐 e as instruções de preparo para o dia escolhido, juntamente com os links fornecidos 📚.
 
