@@ -1,0 +1,152 @@
+%pip -q install google-genai
+
+# Configura a API Key do Google Gemini
+
+import os
+from google.colab import userdata
+
+os.environ["GOOGLE_API_KEY"] = userdata.get('GOOGLE_API_KEY')
+
+# Configura o cliente da SDK do Gemini
+
+from google import genai
+
+client = genai.Client()
+
+MODEL_ID = "gemini-2.0-flash"
+
+# Instalar Framework ADK de agentes do Google ################################################
+!pip install -q google-adk
+
+from google.adk.agents import Agent
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.adk.tools import google_search
+from google.genai import types  # Para criar conteúdos (Content e Part)
+from datetime import date
+import textwrap # Para formatar melhor a saída de texto
+from IPython.display import display, Markdown # Para exibir texto formatado no Colab
+import requests # Para fazer requisições HTTP
+import warnings
+
+warnings.filterwarnings("ignore")
+
+# Função auxiliar que envia uma mensagem para um agente via Runner e retorna a resposta final
+def call_agent(agent: Agent, message_text: str) -> str:
+    # Cria um serviço de sessão em memória
+    session_service = InMemorySessionService()
+    # Cria uma nova sessão (você pode personalizar os IDs conforme necessário)
+    session = session_service.create_session(app_name=agent.name, user_id="user1", session_id="session1")
+    # Cria um Runner para o agente
+    runner = Runner(agent=agent, app_name=agent.name, session_service=session_service)
+    # Cria o conteúdo da mensagem de entrada
+    content = types.Content(role="user", parts=[types.Part(text=message_text)])
+
+    final_response = ""
+    # Itera assincronamente pelos eventos retornados durante a execução do agente
+    for event in runner.run(user_id="user1", session_id="session1", new_message=content):
+        if event.is_final_response():
+          for part in event.content.parts:
+            if part.text is not None:
+              final_response += part.text
+              final_response += "\n"
+    return final_response
+
+# Função auxiliar para exibir texto formatado em Markdown no Colab
+def to_markdown(text):
+  text = text.replace('•', '  *')
+  return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
+
+##########################################
+# --- Agente 1: Buscador de Receitas --- #
+##########################################
+def agente_buscador(topico, data_de_hoje):
+
+  buscador = Agent(
+      name="agente_buscador",
+      model="gemini-2.0-flash",
+      description="Agente que busca receitas no Google",
+      tools=[google_search],
+      instruction="""
+      Você é um assistente de pesquisa. A sua tarefa é usar a ferramenta de busca do google (google_search) para buscar receitas culinárias para pessoas com dieta restritiva, sobre o tópico abaixo, para o café da manhã, almoço e jantar incluindo sobremesa, para o período de 7 dias.Apresente as receitas separadas por dia. 
+      Foque em receitas bem avaliadas, mas que sejam práticas ou fáceis de fazer em casa por pessoas sem grande conhecimento de culinária.
+      """
+  )
+
+  entrada_do_agente_buscador = f"Tópico: {topico}"
+  
+  receitas = call_agent(buscador, entrada_do_agente_buscador)
+  return receitas
+
+################################################
+# --- Agente 2: Lista de Compras --- #
+################################################
+def agente_lista_de_compras(topico, receitas_buscadas):
+    lista = Agent(
+        name="agente_lista_de_compras",
+        model="gemini-2.0-flash",
+        instruction="""
+        Para cada receita encontrada, crie lista de compras separada para cada refeição, contendo os ingredientes necessários e a quantidade de cada item. Apresente as listas separadas por dia. Escolha um dos dias das receitas e ensine como fazê-las, no final coloque um link para as receitas desse dia escolhido e também link para todas as receitas apresntadas nas listas.
+        Finalize parabenizizando o usuário por cuidar da saúde e apresente um alerta de que são sugestões, devendo o usuário sempre consultar um médico ou nutricionista para validação do plano alimnentar 
+        """,
+        description="Agente que elabora lista de compras",
+        tools=[google_search]
+    )
+
+    entrada_do_agente_lista_de_compras = f"Tópico:{topico}\nreceitas buscados: {receitas_buscadas }"
+    
+    lista = call_agent(lista, entrada_do_agente_lista_de_compras)
+    return lista
+
+######################################
+# --- Agente 3: Tabela de Nutrientes --- #
+######################################
+def agente_tabulador(topico, plano_de_alimentação):
+    tabulador = Agent(
+        name="agente_tabulador",
+        model="gemini-2.5-pro-preview-03-25",
+        instruction="""
+            A partir das listas criadas, apresente os nutrientes de cada receita e as calorias de cada refeição informando também o total de calorias diárias de cada receita.
+            """,
+        description="Agente tabulador de nutrientes e calorias"
+    )
+    entrada_do_agente_tabulador = f"Tópico: {topico}\nPlano de alimnetação: {plano_de_alimentação}"
+    
+    tabela = call_agent(tabulador, entrada_do_agente_tabulador)
+    return tabela
+
+##########################################
+# --- Agente 4: Revisor de Qualidade --- #
+##########################################
+def agente_validador(topico, rascunho_gerado):
+    validador = Agent(
+        name="agente_validador",
+        model="gemini-2.5-pro-preview-03-25",
+        instruction="""
+            Revise o rascunho do criador de plano alimentar abaixo sobre o tópico indicado, verificando clareza, concisão, correção e tom 
+            """,
+        description="Agente validador de receitas culinárias para pessoas com restrição alimentar."
+    )
+
+    entrada_do_agente_validador = f"Tópico: {topico}\nRascunho: {rascunho_gerado}"
+    texto_revisado = call_agent(validador, entrada_do_agente_validador)
+    return texto_revisado
+
+print("🚀 Iniciando o Sistema de Criação de Plano de Alimentação para Pessoas com Restrição Alimentar com 2 Agentes 🚀")
+
+# --- Obter o Tópico do Usuário ---
+topico = input("❓ Por favor, digite qual a ENFERMIDADE para a qual você quer criar o plano de alimentação: ")
+
+# Inserir lógica do sistema de agentes ################################################
+if not topico:
+  print("Você se esqueceu de digitar a enfermidade!")
+else:
+  print(f"Maravilha! Vamos então te ajudar a cuidar da saúde criando um plano de alimentação para {topico}")
+
+  receitas_buscadas = agente_buscador(topico, data_de_hoje)
+  print("\n--- Resultado do Agente 1 (Buscador) ---\n")
+  display(to_markdown(receitas_buscadas))
+
+  plano_de_alimentação = agente_lista_de_compras(topico, receitas_buscadas)
+  print("\n--- Resultado do Agente 2 (Lista de Compras) ---\n")
+  display(to_markdown(plano_de_alimentação))
