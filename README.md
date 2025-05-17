@@ -37,12 +37,6 @@ Para experimentar o "Chef IA Duo", siga estas etapas:
 2.  **Execute as Células:** Dentro do notebook do Colab, execute as células de código em sequência ▶️. A interação entre os Agentes 1 e 2 e a geração das receitas, listas de compras e instruções serão exibidas na saída das células.
 3.  **Analise os Resultados:** Observe as listas de compras detalhadas para cada dia 🧐 e as instruções de preparo para o dia escolhido, juntamente com os links fornecidos 📚.
 
-## Estrutura do Projeto
-
-seu-repositorio/
-├── chef_ia_duo.ipynb        (O notebook principal do Google Colab com o código dos agentes 💻)
-└── README.md                 (Este arquivo 📄)
-
 
 ## Contribuição
 
